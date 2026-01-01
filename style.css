@@ -1,0 +1,196 @@
+/* GTK4 transparent window */
+window {
+    background-color: transparent;
+}
+
+/* Main container - transparent */
+.main-container {
+    background: transparent;
+}
+
+/* Control container - capsule shaped */
+.control-container {
+    background: linear-gradient(145deg, rgba(45, 45, 55, 0.95), rgba(30, 30, 40, 0.95));
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    padding: 12px;
+    margin: 0;
+}
+
+/* Expanded section - rounded rectangle */
+.expanded-section {
+    background: linear-gradient(145deg, rgba(45, 45, 55, 0.95), rgba(30, 30, 40, 0.95));
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 16px;
+    margin: 0;
+
+    min-width: 160px;
+}
+
+/* Album cover */
+.album-cover {
+    background: linear-gradient(135deg, rgba(60, 60, 75, 0.8), rgba(40, 40, 55, 0.8));
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Source label */
+.source-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Track title */
+.track-title {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+/* Artist label */
+.artist-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+/* Progress bar */
+.track-progress {
+    min-height: 4px;
+    margin-top: 8px;
+    margin-bottom: 4px;
+}
+
+.track-progress trough {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    min-height: 4px;
+}
+
+.track-progress progress {
+    background: linear-gradient(90deg, rgba(100, 180, 255, 0.95), rgba(140, 100, 200, 0.95));
+    border-radius: 2px;
+    min-height: 4px;
+}
+
+/* Time remaining */
+.time-remaining {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+/* All control buttons - fully circular */
+.control-button {
+    padding: 0;
+    margin: 0;
+    min-width: 44px;
+    min-height: 44px;
+    
+    background: linear-gradient(135deg, rgba(80, 80, 95, 0.9), rgba(60, 60, 75, 0.9));
+    color: rgba(255, 255, 255, 0.95);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.control-button:hover {
+    background: linear-gradient(135deg, rgba(100, 100, 120, 0.95), rgba(80, 80, 100, 0.95));
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: scale(1.08);
+    box-shadow: 
+        0 6px 16px rgba(0, 0, 0, 0.4),
+        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.control-button:active {
+    transform: scale(0.96);
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Play button - vibrant blue */
+.play-button {
+    background: linear-gradient(135deg, rgba(100, 180, 255, 0.95), rgba(70, 150, 235, 0.95));
+    border-color: rgba(120, 200, 255, 0.5);
+    box-shadow: 
+        0 4px 16px rgba(70, 150, 235, 0.4),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.play-button:hover {
+    background: linear-gradient(135deg, rgba(120, 200, 255, 0.98), rgba(90, 170, 255, 0.98));
+    border-color: rgba(140, 220, 255, 0.7);
+    box-shadow: 
+        0 6px 20px rgba(70, 150, 235, 0.6),
+        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.play-button:active {
+    background: linear-gradient(135deg, rgba(80, 160, 235, 0.95), rgba(60, 140, 215, 0.95));
+    box-shadow: 
+        0 2px 10px rgba(70, 150, 235, 0.5),
+        inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Expand button - purple */
+.expand-button {
+    background: linear-gradient(135deg, rgba(140, 100, 200, 0.95), rgba(120, 80, 180, 0.95));
+    border-color: rgba(160, 120, 220, 0.5);
+    box-shadow: 
+        0 4px 16px rgba(120, 80, 180, 0.4),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.expand-button:hover {
+    background: linear-gradient(135deg, rgba(160, 120, 220, 0.98), rgba(140, 100, 200, 0.98));
+    border-color: rgba(180, 140, 240, 0.7);
+    box-shadow: 
+        0 6px 20px rgba(120, 80, 180, 0.6),
+        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.expand-button:active {
+    background: linear-gradient(135deg, rgba(120, 80, 180, 0.95), rgba(100, 60, 160, 0.95));
+    box-shadow: 
+        0 2px 10px rgba(120, 80, 180, 0.5),
+        inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Previous/Next buttons */
+.prev-button, .next-button {
+    background: linear-gradient(135deg, rgba(90, 90, 110, 0.92), rgba(70, 70, 90, 0.92));
+}
+
+.prev-button:hover, .next-button:hover {
+    background: linear-gradient(135deg, rgba(110, 110, 135, 0.96), rgba(90, 90, 115, 0.96));
+}
+
+/* Remove default button styling */
+button {
+    outline: none;
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 
+        0 0 0 3px rgba(100, 180, 255, 0.5),
+        0 4px 16px rgba(70, 150, 235, 0.4),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}

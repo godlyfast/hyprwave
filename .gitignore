@@ -1,0 +1,5 @@
+hyprwave
+*.o
+.vscode/
+.idea/
+build/
