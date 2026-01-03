@@ -225,12 +225,12 @@ GtkWidget* layout_create_main_container(LayoutConfig *config,
 
 const gchar* layout_get_expand_icon(LayoutConfig *config, gboolean is_expanded) {
     if (config->is_vertical) {
-        return is_expanded ? "icons/arrow-right.svg" : "icons/arrow-left.svg";
+        return is_expanded ? "arrow-right.svg" : "arrow-left.svg";
     } else {
         if (config->edge == EDGE_TOP) {
-            return is_expanded ? "icons/arrow-up.svg" : "icons/arrow-down.svg";
+            return is_expanded ? "arrow-up.svg" : "arrow-down.svg";
         } else {
-            return is_expanded ? "icons/arrow-down.svg" : "icons/arrow-up.svg";
+            return is_expanded ? "arrow-down.svg" : "arrow-up.svg";
         }
     }
 }
