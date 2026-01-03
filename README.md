@@ -63,7 +63,7 @@ sudo dnf install gtk4-devel gtk4-layer-shell-devel
 ### Building from Source
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/hyprwave.git
+git clone https://github.com/shantanubaddar/hyprwave.git
 cd hyprwave
 
 # Build
@@ -215,6 +215,6 @@ Contributions are welcome! Feel free to:
 
 ## 💬 Support
 
-- **Issues:** [GitHub Issues](https://github.com/YOUR_USERNAME/hyprwave/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/YOUR_USERNAME/hyprwave/discussions)
+- **Issues:** [GitHub Issues](https://github.com/shantanubaddar/hyprwave/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/shantanubaddar/hyprwave/discussions)
 
