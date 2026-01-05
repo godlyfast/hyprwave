@@ -4,22 +4,21 @@
 #include <gtk/gtk.h>
 #include <gtk4-layer-shell.h>
 
-// Edge configuration
 typedef enum {
     EDGE_RIGHT,
     EDGE_LEFT,
     EDGE_TOP,
     EDGE_BOTTOM
-} EdgePosition;
+} ScreenEdge;
 
-// Layout configuration
 typedef struct {
-    EdgePosition edge;
+    ScreenEdge edge;
     int margin;
     gboolean is_vertical;
+    gchar *toggle_visibility_bind;
+    gchar *toggle_expand_bind;
 } LayoutConfig;
 
-// Widget structure for expanded section
 typedef struct {
     GtkWidget *album_cover;
     GtkWidget *source_label;
@@ -29,27 +28,28 @@ typedef struct {
     GtkWidget *time_remaining;
 } ExpandedWidgets;
 
-// Function declarations
+// Config management
 LayoutConfig* layout_load_config(void);
 void layout_free_config(LayoutConfig *config);
 
+// Window setup
 void layout_setup_window_anchors(GtkWindow *window, LayoutConfig *config);
 
+// UI construction
 GtkWidget* layout_create_control_bar(LayoutConfig *config,
                                       GtkWidget **prev_btn,
                                       GtkWidget **play_btn,
                                       GtkWidget **next_btn,
                                       GtkWidget **expand_btn);
 
-GtkWidget* layout_create_expanded_section(LayoutConfig *config,
-                                           ExpandedWidgets *widgets);
+GtkWidget* layout_create_expanded_section(LayoutConfig *config, ExpandedWidgets *widgets);
 
 GtkWidget* layout_create_main_container(LayoutConfig *config,
                                          GtkWidget *control_bar,
                                          GtkWidget *revealer);
 
+// Helper functions
 const gchar* layout_get_expand_icon(LayoutConfig *config, gboolean is_expanded);
-
 GtkRevealerTransitionType layout_get_transition_type(LayoutConfig *config);
 
 #endif // LAYOUT_H
