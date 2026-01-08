@@ -39,6 +39,7 @@ typedef struct {
 
 static void update_position(AppState *state);
 static void update_metadata(AppState *state);
+static void update_playback_status(AppState *state);
 static void on_expand_clicked(GtkButton *button, gpointer user_data);
 static void on_properties_changed(GDBusProxy *proxy, GVariant *changed_properties,
                                   GStrv invalidated_properties, gpointer user_data);
@@ -239,8 +240,9 @@ static void switch_to_player(AppState *state, const gchar *bus_name) {
 
     g_print("Switched to player: %s (%s)\n", state->player_display_name, bus_name);
 
-    // Update metadata
+    // Update metadata and playback status
     update_metadata(state);
+    update_playback_status(state);
 }
 
 static void cycle_player(AppState *state, gboolean forward) {
@@ -570,16 +572,15 @@ static void update_metadata(AppState *state) {
     update_position(state);
 }
 
-static void on_properties_changed(GDBusProxy *proxy, GVariant *changed_properties,
-                                  GStrv invalidated_properties, gpointer user_data) {
-    AppState *state = (AppState *)user_data;
-    update_metadata(state);
-    
-    GVariant *status_var = g_dbus_proxy_get_cached_property(proxy, "PlaybackStatus");
+// Update play button icon based on current playback status
+static void update_playback_status(AppState *state) {
+    if (!state->mpris_proxy) return;
+
+    GVariant *status_var = g_dbus_proxy_get_cached_property(state->mpris_proxy, "PlaybackStatus");
     if (status_var) {
         const gchar *status = g_variant_get_string(status_var, NULL);
         state->is_playing = g_strcmp0(status, "Playing") == 0;
-        
+
         if (state->is_playing) {
             gchar *icon_path = get_icon_path("pause.svg");
             gtk_image_set_from_file(GTK_IMAGE(state->play_icon), icon_path);
@@ -591,6 +592,13 @@ static void on_properties_changed(GDBusProxy *proxy, GVariant *changed_propertie
         }
         g_variant_unref(status_var);
     }
+}
+
+static void on_properties_changed(GDBusProxy *proxy, GVariant *changed_properties,
+                                  GStrv invalidated_properties, gpointer user_data) {
+    AppState *state = (AppState *)user_data;
+    update_metadata(state);
+    update_playback_status(state);
 }
 
 static void connect_to_player(AppState *state, const gchar *bus_name) {
