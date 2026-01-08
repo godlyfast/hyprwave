@@ -20,23 +20,256 @@ typedef struct {
     GtkWidget *artist_label;
     GtkWidget *time_remaining;
     GtkWidget *progress_bar;
+    GtkWidget *player_label;     // Player selector display
     gboolean is_playing;
     gboolean is_expanded;
     gboolean is_visible;
     GDBusProxy *mpris_proxy;
-    gchar *current_player;
+    gchar *current_player;       // D-Bus name of current player
     guint update_timer;
     LayoutConfig *layout;
     NotificationState *notification;
     gchar *last_track_id;
+    // Player switching
+    gchar **players;             // Array of MPRIS player D-Bus names
+    gint player_count;
+    gint current_player_index;
+    gchar *player_display_name;  // Human-readable name from Identity
 } AppState;
 
 static void update_position(AppState *state);
 static void update_metadata(AppState *state);
+static void update_playback_status(AppState *state);
 static void on_expand_clicked(GtkButton *button, gpointer user_data);
+static void on_properties_changed(GDBusProxy *proxy, GVariant *changed_properties,
+                                  GStrv invalidated_properties, gpointer user_data);
+static void load_available_players(AppState *state);
+static void switch_to_player(AppState *state, const gchar *bus_name);
 
 // Global state for signal handlers
 static AppState *global_state = NULL;
+
+// ========================================
+// PLAYER SWITCHING FUNCTIONS
+// ========================================
+
+// Check if a D-Bus name should be excluded from player list
+static gboolean is_excluded_player(const gchar *name) {
+    // Skip browsers (limited MPRIS support) and playerctld (proxy)
+    return g_strstr_len(name, -1, "chromium") != NULL ||
+           g_strstr_len(name, -1, "firefox") != NULL ||
+           g_strstr_len(name, -1, "brave") != NULL ||
+           g_strstr_len(name, -1, "playerctld") != NULL;
+}
+
+// Load all available MPRIS players from D-Bus
+static void load_available_players(AppState *state) {
+    // Free previous list
+    if (state->players) {
+        g_strfreev(state->players);
+        state->players = NULL;
+    }
+    state->player_count = 0;
+
+    GError *error = NULL;
+    GDBusProxy *dbus_proxy = g_dbus_proxy_new_for_bus_sync(
+        G_BUS_TYPE_SESSION,
+        G_DBUS_PROXY_FLAGS_NONE,
+        NULL,
+        "org.freedesktop.DBus",
+        "/org/freedesktop/DBus",
+        "org.freedesktop.DBus",
+        NULL,
+        &error
+    );
+
+    if (error) {
+        g_error_free(error);
+        return;
+    }
+
+    GVariant *result = g_dbus_proxy_call_sync(
+        dbus_proxy,
+        "ListNames",
+        NULL,
+        G_DBUS_CALL_FLAGS_NONE,
+        -1, NULL, &error
+    );
+
+    if (error) {
+        g_error_free(error);
+        g_object_unref(dbus_proxy);
+        return;
+    }
+
+    GVariantIter *iter;
+    g_variant_get(result, "(as)", &iter);
+
+    const gchar *name;
+    GPtrArray *player_arr = g_ptr_array_new();
+
+    // Find all MPRIS players (excluding browsers and playerctld)
+    while (g_variant_iter_loop(iter, "&s", &name)) {
+        if (g_str_has_prefix(name, "org.mpris.MediaPlayer2.") &&
+            !is_excluded_player(name)) {
+            g_ptr_array_add(player_arr, g_strdup(name));
+        }
+    }
+
+    g_variant_iter_free(iter);
+    g_variant_unref(result);
+    g_object_unref(dbus_proxy);
+
+    g_ptr_array_add(player_arr, NULL);
+    state->players = (gchar **)g_ptr_array_free(player_arr, FALSE);
+
+    // Count players
+    state->player_count = 0;
+    for (gchar **p = state->players; *p; p++) state->player_count++;
+
+    // Find current player index
+    state->current_player_index = -1;
+    if (state->current_player && state->players) {
+        for (int i = 0; state->players[i]; i++) {
+            if (g_strcmp0(state->players[i], state->current_player) == 0) {
+                state->current_player_index = i;
+                break;
+            }
+        }
+    }
+
+    // Update player label
+    if (state->player_label) {
+        if (state->player_display_name) {
+            gtk_label_set_text(GTK_LABEL(state->player_label), state->player_display_name);
+        } else if (state->player_count > 0) {
+            gtk_label_set_text(GTK_LABEL(state->player_label), "Click to select");
+        } else {
+            gtk_label_set_text(GTK_LABEL(state->player_label), "No players");
+        }
+    }
+}
+
+// Save preferred player to config file
+static void save_preferred_player(const gchar *bus_name) {
+    gchar *config_dir = g_build_filename(g_get_user_config_dir(), "hyprwave", NULL);
+    gchar *pref_file = g_build_filename(config_dir, "preferred_player", NULL);
+
+    g_mkdir_with_parents(config_dir, 0755);
+    g_file_set_contents(pref_file, bus_name, -1, NULL);
+
+    g_free(pref_file);
+    g_free(config_dir);
+}
+
+// Load preferred player from config file
+static gchar* load_preferred_player(void) {
+    gchar *pref_file = g_build_filename(g_get_user_config_dir(), "hyprwave", "preferred_player", NULL);
+    gchar *contents = NULL;
+
+    if (g_file_get_contents(pref_file, &contents, NULL, NULL)) {
+        g_strstrip(contents);
+    }
+
+    g_free(pref_file);
+    return contents;
+}
+
+// Switch to a specific MPRIS player (by D-Bus name)
+static void switch_to_player(AppState *state, const gchar *bus_name) {
+    if (!bus_name) return;
+
+    // Disconnect from current player
+    if (state->mpris_proxy) {
+        g_object_unref(state->mpris_proxy);
+        state->mpris_proxy = NULL;
+    }
+
+    g_free(state->current_player);
+    state->current_player = g_strdup(bus_name);
+
+    GError *error = NULL;
+    state->mpris_proxy = g_dbus_proxy_new_for_bus_sync(
+        G_BUS_TYPE_SESSION,
+        G_DBUS_PROXY_FLAGS_NONE,
+        NULL,
+        bus_name,
+        "/org/mpris/MediaPlayer2",
+        "org.mpris.MediaPlayer2.Player",
+        NULL,
+        &error
+    );
+
+    if (error) {
+        g_printerr("Failed to connect to player: %s\n", error->message);
+        g_error_free(error);
+        return;
+    }
+
+    g_signal_connect(state->mpris_proxy, "g-properties-changed",
+                     G_CALLBACK(on_properties_changed), state);
+
+    // Get display name from Identity
+    GDBusProxy *player_proxy = g_dbus_proxy_new_for_bus_sync(
+        G_BUS_TYPE_SESSION,
+        G_DBUS_PROXY_FLAGS_NONE,
+        NULL,
+        bus_name,
+        "/org/mpris/MediaPlayer2",
+        "org.mpris.MediaPlayer2",
+        NULL,
+        NULL
+    );
+
+    if (player_proxy) {
+        GVariant *identity = g_dbus_proxy_get_cached_property(player_proxy, "Identity");
+        if (identity) {
+            const gchar *id_str = g_variant_get_string(identity, NULL);
+            g_free(state->player_display_name);
+            state->player_display_name = g_strdup(id_str);
+            g_variant_unref(identity);
+        }
+        g_object_unref(player_proxy);
+    }
+
+    // Update display and save preference
+    if (state->player_label && state->player_display_name) {
+        gtk_label_set_text(GTK_LABEL(state->player_label), state->player_display_name);
+    }
+    save_preferred_player(bus_name);
+
+    g_print("Switched to player: %s (%s)\n", state->player_display_name, bus_name);
+
+    // Update metadata and playback status
+    update_metadata(state);
+    update_playback_status(state);
+}
+
+static void cycle_player(AppState *state, gboolean forward) {
+    // Refresh player list from D-Bus
+    load_available_players(state);
+
+    if (!state->players || state->player_count == 0) {
+        g_print("No MPRIS players available\n");
+        return;
+    }
+
+    gint new_index;
+    if (state->current_player_index < 0) {
+        new_index = 0;
+    } else if (forward) {
+        new_index = (state->current_player_index + 1) % state->player_count;
+    } else {
+        new_index = (state->current_player_index - 1 + state->player_count) % state->player_count;
+    }
+
+    switch_to_player(state, state->players[new_index]);
+}
+
+static void on_player_clicked(GtkGestureClick *gesture, gint n_press, gdouble x, gdouble y, gpointer user_data) {
+    AppState *state = (AppState *)user_data;
+    cycle_player(state, TRUE);
+}
 
 // ========================================
 // SIGNAL HANDLERS FOR KEYBINDS
@@ -234,9 +467,6 @@ static void update_metadata(AppState *state) {
         g_free(state->last_track_id);
         state->last_track_id = g_strdup(track_id);
     }
-    g_print("DEBUG: track_changed=%d, notif_enabled=%d, now_playing=%d, notification=%p\n",
-        track_changed, state->layout->notifications_enabled, 
-        state->layout->now_playing_enabled, state->notification);
     // Show notification if track changed and notifications enabled
     if (track_changed && state->layout->notifications_enabled && 
         state->layout->now_playing_enabled && state->notification) {
@@ -288,14 +518,20 @@ static void update_metadata(AppState *state) {
             GdkTexture *texture = gdk_texture_new_for_pixbuf(pixbuf);
             GtkWidget *image = gtk_picture_new_for_paintable(GDK_PAINTABLE(texture));
             gtk_widget_set_size_request(image, 120, 120);
-            
+            gtk_picture_set_can_shrink(GTK_PICTURE(image), TRUE);
+            gtk_picture_set_content_fit(GTK_PICTURE(image), GTK_CONTENT_FIT_CONTAIN);
+            gtk_widget_set_halign(image, GTK_ALIGN_CENTER);
+            gtk_widget_set_valign(image, GTK_ALIGN_CENTER);
+            gtk_widget_set_hexpand(image, FALSE);
+            gtk_widget_set_vexpand(image, FALSE);
+
             GtkWidget *child = gtk_widget_get_first_child(state->album_cover);
             while (child) {
                 GtkWidget *next = gtk_widget_get_next_sibling(child);
                 gtk_widget_unparent(child);
                 child = next;
             }
-            
+
             gtk_box_append(GTK_BOX(state->album_cover), image);
             g_object_unref(texture);
             g_object_unref(pixbuf);
@@ -333,16 +569,15 @@ static void update_metadata(AppState *state) {
     update_position(state);
 }
 
-static void on_properties_changed(GDBusProxy *proxy, GVariant *changed_properties,
-                                  GStrv invalidated_properties, gpointer user_data) {
-    AppState *state = (AppState *)user_data;
-    update_metadata(state);
-    
-    GVariant *status_var = g_dbus_proxy_get_cached_property(proxy, "PlaybackStatus");
+// Update play button icon based on current playback status
+static void update_playback_status(AppState *state) {
+    if (!state->mpris_proxy) return;
+
+    GVariant *status_var = g_dbus_proxy_get_cached_property(state->mpris_proxy, "PlaybackStatus");
     if (status_var) {
         const gchar *status = g_variant_get_string(status_var, NULL);
         state->is_playing = g_strcmp0(status, "Playing") == 0;
-        
+
         if (state->is_playing) {
             gchar *icon_path = get_icon_path("pause.svg");
             gtk_image_set_from_file(GTK_IMAGE(state->play_icon), icon_path);
@@ -356,14 +591,21 @@ static void on_properties_changed(GDBusProxy *proxy, GVariant *changed_propertie
     }
 }
 
+static void on_properties_changed(GDBusProxy *proxy, GVariant *changed_properties,
+                                  GStrv invalidated_properties, gpointer user_data) {
+    AppState *state = (AppState *)user_data;
+    update_metadata(state);
+    update_playback_status(state);
+}
+
 static void connect_to_player(AppState *state, const gchar *bus_name) {
     if (state->mpris_proxy) {
         g_object_unref(state->mpris_proxy);
     }
-    
+
     g_free(state->current_player);
     state->current_player = g_strdup(bus_name);
-    
+
     GError *error = NULL;
     state->mpris_proxy = g_dbus_proxy_new_for_bus_sync(
         G_BUS_TYPE_SESSION,
@@ -375,16 +617,42 @@ static void connect_to_player(AppState *state, const gchar *bus_name) {
         NULL,
         &error
     );
-    
+
     if (error) {
         g_printerr("Failed to connect to player: %s\n", error->message);
         g_error_free(error);
         return;
     }
-    
+
     g_signal_connect(state->mpris_proxy, "g-properties-changed",
                      G_CALLBACK(on_properties_changed), state);
-    
+
+    // Get display name from Identity for all players
+    GDBusProxy *player_proxy = g_dbus_proxy_new_for_bus_sync(
+        G_BUS_TYPE_SESSION,
+        G_DBUS_PROXY_FLAGS_NONE,
+        NULL,
+        bus_name,
+        "/org/mpris/MediaPlayer2",
+        "org.mpris.MediaPlayer2",
+        NULL,
+        NULL
+    );
+
+    if (player_proxy) {
+        GVariant *identity = g_dbus_proxy_get_cached_property(player_proxy, "Identity");
+        if (identity) {
+            const gchar *id_str = g_variant_get_string(identity, NULL);
+            g_free(state->player_display_name);
+            state->player_display_name = g_strdup(id_str);
+            if (state->player_label) {
+                gtk_label_set_text(GTK_LABEL(state->player_label), state->player_display_name);
+            }
+            g_variant_unref(identity);
+        }
+        g_object_unref(player_proxy);
+    }
+
     update_metadata(state);
     g_print("Connected to player: %s\n", bus_name);
 }
@@ -401,12 +669,12 @@ static void find_active_player(AppState *state) {
         NULL,
         &error
     );
-    
+
     if (error) {
         g_error_free(error);
         return;
     }
-    
+
     GVariant *result = g_dbus_proxy_call_sync(
         dbus_proxy,
         "ListNames",
@@ -414,24 +682,48 @@ static void find_active_player(AppState *state) {
         G_DBUS_CALL_FLAGS_NONE,
         -1, NULL, &error
     );
-    
+
     if (error) {
         g_error_free(error);
         g_object_unref(dbus_proxy);
         return;
     }
-    
+
     GVariantIter *iter;
     g_variant_get(result, "(as)", &iter);
-    
+
     const gchar *name;
+    gchar *first_player = NULL;
+    gchar *preferred_player = load_preferred_player();
+
+    // Find MPRIS players
     while (g_variant_iter_loop(iter, "&s", &name)) {
-        if (g_str_has_prefix(name, "org.mpris.MediaPlayer2.")) {
-            connect_to_player(state, name);
-            break;
+        if (g_str_has_prefix(name, "org.mpris.MediaPlayer2.") &&
+            !is_excluded_player(name)) {
+            // Check for preferred player first
+            if (preferred_player && g_strcmp0(name, preferred_player) == 0) {
+                connect_to_player(state, name);
+                g_variant_iter_free(iter);
+                g_variant_unref(result);
+                g_object_unref(dbus_proxy);
+                g_free(preferred_player);
+                return;
+            }
+            // Remember first valid player as fallback
+            if (!first_player) {
+                first_player = g_strdup(name);
+            }
         }
     }
-    
+
+    g_free(preferred_player);
+
+    // Use first available player if no preferred found
+    if (first_player) {
+        connect_to_player(state, first_player);
+        g_free(first_player);
+    }
+
     g_variant_iter_free(iter);
     g_variant_unref(result);
     g_object_unref(dbus_proxy);
@@ -501,7 +793,7 @@ static void load_css() {
     gtk_style_context_add_provider_for_display(
         gdk_display_get_default(),
         GTK_STYLE_PROVIDER(provider),
-        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+        GTK_STYLE_PROVIDER_PRIORITY_USER + 100
     );
     g_object_unref(provider);
 }
@@ -510,18 +802,16 @@ static void activate(GtkApplication *app, gpointer user_data) {
     AppState *state = g_new0(AppState, 1);
     state->is_playing = FALSE;
     state->is_expanded = FALSE;
-    state->is_visible = TRUE;           // ADD THIS
+    state->is_visible = TRUE;
     state->mpris_proxy = NULL;
     state->current_player = NULL;
-    state->last_track_id = NULL;        // ADD THIS
+    state->last_track_id = NULL;
     state->layout = layout_load_config();
     
-    // ADD THESE LINES:
     // Initialize notification system
     state->notification = notification_init(app);
-    g_print("DEBUG: Notification initialized: %p\n", state->notification);
     if (!state->notification) {
-        g_printerr("ERROR: Failed to initialize notification system!\n");
+        g_printerr("Failed to initialize notification system\n");
     }
     
     GtkWidget *window = gtk_application_window_new(app);
@@ -543,7 +833,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_name(window, "hyprwave-window");
     
     // CRITICAL: Make the window background fully transparent
-    GdkRGBA transparent = {0, 0, 0, 0};
     gtk_widget_add_css_class(window, "hyprwave-window");
     
     // Create widget elements
@@ -551,11 +840,20 @@ static void activate(GtkApplication *app, gpointer user_data) {
     state->album_cover = album_cover;
     gtk_widget_add_css_class(album_cover, "album-cover");
     gtk_widget_set_size_request(album_cover, 120, 120);
+    gtk_widget_set_halign(album_cover, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(album_cover, GTK_ALIGN_CENTER);
+    gtk_widget_set_hexpand(album_cover, FALSE);
+    gtk_widget_set_vexpand(album_cover, FALSE);
     
     GtkWidget *source_label = gtk_label_new("No Source");
     state->source_label = source_label;
     gtk_widget_add_css_class(source_label, "source-label");
-    
+
+    // Player label (clickable to cycle players)
+    GtkWidget *player_label = gtk_label_new("No Player");
+    state->player_label = player_label;
+    gtk_widget_add_css_class(player_label, "player-label");
+
     GtkWidget *track_title = gtk_label_new("No Track Playing");
     state->track_title = track_title;
     gtk_widget_add_css_class(track_title, "track-title");
@@ -579,15 +877,22 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_add_css_class(time_remaining, "time-remaining");
     
     // Create expanded section using layout module
+    // Add click gesture to player label for cycling players
+    GtkGesture *player_click = gtk_gesture_click_new();
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(player_click), GDK_BUTTON_PRIMARY);
+    g_signal_connect(player_click, "pressed", G_CALLBACK(on_player_clicked), state);
+    gtk_widget_add_controller(player_label, GTK_EVENT_CONTROLLER(player_click));
+
     ExpandedWidgets expanded_widgets = {
         .album_cover = album_cover,
         .source_label = source_label,
+        .player_label = player_label,
         .track_title = track_title,
         .artist_label = artist_label,
         .progress_bar = progress_bar,
         .time_remaining = time_remaining
     };
-    
+
     GtkWidget *expanded_section = layout_create_expanded_section(state->layout, &expanded_widgets);
     
     // Create revealer
@@ -730,10 +1035,13 @@ static void activate(GtkApplication *app, gpointer user_data) {
     
     // Find and connect to active media player
     find_active_player(state);
-    
+
+    // Load available players
+    load_available_players(state);
+
     // Update position every second
     state->update_timer = g_timeout_add_seconds(1, update_position_tick, state);
-    
+
     g_print("HyprWave started!\n");
 }
 

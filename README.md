@@ -42,6 +42,7 @@ A sleek, modern music control overlay for Wayland compositors (Hyprland, Niri, S
 - **Expandable Panel** - Toggle to reveal detailed track information
 - **Keybind Support** - Hide/show and expand with keyboard shortcuts
 - **Now Playing Notifications** - Elegant slide-in notifications for track changes (v0.4.0)
+- **Player Switching** - Click to cycle through available MPRIS players (Spotify, VLC, Roon zones, etc.)
 - **Configurable Layout** - Position on any screen edge (left, right, top, bottom)
 - **Minimal Resource Usage** - ~80-95MB RAM, <0.3% CPU
 
@@ -99,10 +100,37 @@ The installer will:
 ✅ **Fully Supported:**
 - Spotify (Desktop app)
 - VLC Media Player
+- Roon (via MPRIS bridge - see setup below)
 - Any MPRIS2-compatible player (Rhythmbox, Audacious, MPD with mpDris2, etc.)
 
 ⚠️ **Limited Support:**
 - Web browsers - Basic controls only, limited metadata
+
+### Roon Setup
+
+Roon requires an MPRIS bridge to work with HyprWave. We recommend the multi-zone bridge which exposes all Roon zones as separate MPRIS players:
+
+```bash
+# Arch Linux (AUR)
+yay -S roon-mpris-multizone-git
+```
+
+Or install from source:
+```bash
+git clone https://github.com/godlyfast/roon-mpris.git
+cd roon-mpris
+npm install
+```
+
+Then:
+1. Run `roon-mpris` (add to autostart for persistence)
+2. Open Roon → Settings → Extensions
+3. Enable "Roon MPRIS Multi-Zone Bridge"
+4. HyprWave will auto-detect all your Roon zones
+
+**Player Switching:** Click the player label in the expanded view to cycle through all available MPRIS players (including Roon zones). Your preference is saved automatically.
+
+**Note:** Volume control requires the Roon app directly.
 
 ## ⚙️ Configuration
 
@@ -274,9 +302,9 @@ Config: `~/.config/hyprwave/config.conf`
 - [x] Now Playing notifications with smooth slide animations
 - [x] Configurable notification settings
 - [x] Album art in notifications
+- [x] Multiple player switching (cycle through Spotify, VLC, Roon zones, etc.)
 
 ### v0.5.0 (Planned)
-- [ ] Multiple player switching
 - [ ] Volume control integration
 - [ ] Customizable notification duration
 

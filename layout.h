@@ -24,6 +24,7 @@ typedef struct {
 typedef struct {
     GtkWidget *album_cover;
     GtkWidget *source_label;
+    GtkWidget *player_label;
     GtkWidget *track_title;
     GtkWidget *artist_label;
     GtkWidget *progress_bar;
