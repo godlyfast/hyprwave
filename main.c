@@ -519,14 +519,20 @@ static void update_metadata(AppState *state) {
             GdkTexture *texture = gdk_texture_new_for_pixbuf(pixbuf);
             GtkWidget *image = gtk_picture_new_for_paintable(GDK_PAINTABLE(texture));
             gtk_widget_set_size_request(image, 120, 120);
-            
+            gtk_picture_set_can_shrink(GTK_PICTURE(image), TRUE);
+            gtk_picture_set_content_fit(GTK_PICTURE(image), GTK_CONTENT_FIT_CONTAIN);
+            gtk_widget_set_halign(image, GTK_ALIGN_CENTER);
+            gtk_widget_set_valign(image, GTK_ALIGN_CENTER);
+            gtk_widget_set_hexpand(image, FALSE);
+            gtk_widget_set_vexpand(image, FALSE);
+
             GtkWidget *child = gtk_widget_get_first_child(state->album_cover);
             while (child) {
                 GtkWidget *next = gtk_widget_get_next_sibling(child);
                 gtk_widget_unparent(child);
                 child = next;
             }
-            
+
             gtk_box_append(GTK_BOX(state->album_cover), image);
             g_object_unref(texture);
             g_object_unref(pixbuf);
@@ -831,6 +837,10 @@ static void activate(GtkApplication *app, gpointer user_data) {
     state->album_cover = album_cover;
     gtk_widget_add_css_class(album_cover, "album-cover");
     gtk_widget_set_size_request(album_cover, 120, 120);
+    gtk_widget_set_halign(album_cover, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(album_cover, GTK_ALIGN_CENTER);
+    gtk_widget_set_hexpand(album_cover, FALSE);
+    gtk_widget_set_vexpand(album_cover, FALSE);
     
     GtkWidget *source_label = gtk_label_new("No Source");
     state->source_label = source_label;

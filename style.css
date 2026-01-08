@@ -169,6 +169,13 @@ revealer > * {
     border-radius: var(--border-radius-album);
     border: 1px solid var(--border-button);
     box-shadow: 0 4px 16px var(--shadow-button);
+    min-width: 120px;
+    min-height: 120px;
+}
+
+.album-cover picture {
+    min-width: 120px;
+    min-height: 120px;
 }
 
 /* ========================================
