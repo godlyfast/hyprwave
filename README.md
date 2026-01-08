@@ -5,6 +5,7 @@ A sleek, modern music control bar for Wayland compositors (Hyprland, Niri, Sway,
 
 Updates till now:  - Multi-Anchor support, Notifications, Music Controls, CSS Styling (control bar, expanded section and notifications), and launching it as an application in latest update.
 
+Built and primarily tested on Niri, for all wayland compositors that support GTK4 and GTK4-layer-shell.
 
 #### 📸 Screenshots
 
