@@ -35,6 +35,11 @@ typedef struct {
     gint player_count;
     gint current_player_index;
     gchar *player_display_name;  // Human-readable name from Identity
+    // Notification debounce
+    guint notification_timer;
+    gchar *pending_title;
+    gchar *pending_artist;
+    gchar *pending_art_url;
 } AppState;
 
 static void update_position(AppState *state);
@@ -328,10 +333,10 @@ static void on_player_clicked(GtkGestureClick *gesture, gint n_press, gdouble x,
 
 static void on_window_hide_complete(GObject *revealer, GParamSpec *pspec, gpointer user_data) {
     AppState *state = (AppState *)user_data;
-    
+
     if (!gtk_revealer_get_child_revealed(GTK_REVEALER(state->window_revealer))) {
-        gtk_window_set_default_size(GTK_WINDOW(state->window), 1, 1);
-        g_print("HyprWave hidden (animation complete)\n");
+        // Actually hide the window to make it completely invisible
+        gtk_widget_set_visible(state->window, FALSE);
     }
 }
 
@@ -342,8 +347,6 @@ static void handle_sigusr1(int sig) {
     
     if (!global_state->is_visible) {
         // HIDE: Slide out animation
-        g_print("Hiding HyprWave...\n");
-        
         // First collapse expanded section if open
         if (global_state->is_expanded) {
             global_state->is_expanded = FALSE;
@@ -355,21 +358,17 @@ static void handle_sigusr1(int sig) {
         
     } else {
         // SHOW: Slide in animation
-        g_print("Showing HyprWave...\n");
-        gtk_window_set_default_size(GTK_WINDOW(global_state->window), -1, -1);
+        // Make window visible first, then start reveal animation
+        gtk_widget_set_visible(global_state->window, TRUE);
         gtk_revealer_set_reveal_child(GTK_REVEALER(global_state->window_revealer), TRUE);
     }
 }
 
 static void handle_sigusr2(int sig) {
     if (!global_state) return;
-    if (!global_state->is_visible) {
-        g_print("Cannot toggle expand: HyprWave is hidden\n");
-        return;
-    }
-    
+    if (!global_state->is_visible) return;
+
     // Toggle expand by simulating button click
-    g_print("Toggling expand state...\n");
     on_expand_clicked(NULL, global_state);
 }
 
@@ -470,38 +469,88 @@ static void update_position(AppState *state) {
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(state->progress_bar), fraction);
 }
 
+// Track notification retry count
+static gint notification_retry_count = 0;
+#define MAX_NOTIFICATION_RETRIES 5
+
+// Debounced notification callback - shows notification after delay
+static gboolean show_pending_notification(gpointer user_data) {
+    AppState *state = (AppState *)user_data;
+
+    gboolean has_title = state->pending_title && strlen(state->pending_title) > 0;
+    gboolean has_artist = state->pending_artist && strlen(state->pending_artist) > 0;
+
+    // Wait for at least title and artist, retry if not ready yet
+    if (!has_title || !has_artist) {
+        notification_retry_count++;
+        if (notification_retry_count < MAX_NOTIFICATION_RETRIES) {
+            // Reschedule - keep timer ID updated
+            state->notification_timer = g_timeout_add(200, show_pending_notification, state);
+            return G_SOURCE_REMOVE;
+        }
+        g_print("Notification skipped - metadata incomplete after retries\n");
+    } else {
+        // We have complete data - show notification
+        notification_show(state->notification,
+                          state->pending_title,
+                          state->pending_artist,
+                          state->pending_art_url,
+                          "Now Playing");
+    }
+
+    // Clear pending data and reset
+    g_free(state->pending_title);
+    g_free(state->pending_artist);
+    g_free(state->pending_art_url);
+    state->pending_title = NULL;
+    state->pending_artist = NULL;
+    state->pending_art_url = NULL;
+    state->notification_timer = 0;
+    notification_retry_count = 0;
+
+    return G_SOURCE_REMOVE;
+}
+
 static void update_metadata(AppState *state) {
     if (!state->mpris_proxy) return;
-    
+
     GVariant *metadata = g_dbus_proxy_get_cached_property(state->mpris_proxy, "Metadata");
     if (!metadata) return;
-    
+
     GVariantIter iter;
     GVariant *value;
     gchar *key;
-    
-    const gchar *title = NULL;
-    const gchar *artist = NULL;
-    const gchar *art_url = NULL;
-    const gchar *track_id = NULL;
-    
+
+    // Use owned copies since g_variant_iter_loop frees data each iteration
+    gchar *title = NULL;
+    gchar *artist = NULL;
+    gchar *art_url = NULL;
+    gchar *track_id = NULL;
+
     g_variant_iter_init(&iter, metadata);
     while (g_variant_iter_loop(&iter, "{sv}", &key, &value)) {
         if (g_strcmp0(key, "xesam:title") == 0) {
-            title = g_variant_get_string(value, NULL);
+            g_free(title);
+            title = g_strdup(g_variant_get_string(value, NULL));
         }
         else if (g_strcmp0(key, "xesam:artist") == 0) {
             if (g_variant_is_of_type(value, G_VARIANT_TYPE_STRING_ARRAY)) {
                 gsize length;
                 const gchar **artists = g_variant_get_strv(value, &length);
-                if (length > 0) artist = artists[0];
+                if (length > 0) {
+                    g_free(artist);
+                    artist = g_strdup(artists[0]);
+                }
+                g_free(artists);
             }
         }
         else if (g_strcmp0(key, "mpris:artUrl") == 0) {
-            art_url = g_variant_get_string(value, NULL);
+            g_free(art_url);
+            art_url = g_strdup(g_variant_get_string(value, NULL));
         }
         else if (g_strcmp0(key, "mpris:trackid") == 0) {
-            track_id = g_variant_get_string(value, NULL);
+            g_free(track_id);
+            track_id = g_strdup(g_variant_get_string(value, NULL));
         }
     }
     
@@ -518,10 +567,41 @@ static void update_metadata(AppState *state) {
         g_free(state->last_track_id);
         state->last_track_id = g_strdup(track_id);
     }
-    // Show notification if track changed and notifications enabled
-    if (track_changed && state->layout->notifications_enabled && 
+    // Handle notification with debounce
+    if (state->layout->notifications_enabled &&
         state->layout->now_playing_enabled && state->notification) {
-        notification_show(state->notification, title, artist, art_url, "Now Playing");
+
+        if (track_changed) {
+            // New track - cancel any pending notification and schedule new one
+            if (state->notification_timer > 0) {
+                g_source_remove(state->notification_timer);
+                state->notification_timer = 0;
+            }
+
+            // Reset retry count for new track
+            notification_retry_count = 0;
+
+            // Store pending notification data (make copies)
+            g_free(state->pending_title);
+            g_free(state->pending_artist);
+            g_free(state->pending_art_url);
+            state->pending_title = g_strdup(title);
+            state->pending_artist = g_strdup(artist);
+            state->pending_art_url = g_strdup(art_url);
+
+            // Schedule notification after 300ms delay to ensure metadata is complete
+            state->notification_timer = g_timeout_add(300, show_pending_notification, state);
+
+        } else if (state->notification_timer > 0) {
+            // Same track but notification pending - update with latest data
+            // This handles the case where metadata arrives in multiple signals
+            g_free(state->pending_title);
+            g_free(state->pending_artist);
+            g_free(state->pending_art_url);
+            state->pending_title = g_strdup(title);
+            state->pending_artist = g_strdup(artist);
+            state->pending_art_url = g_strdup(art_url);
+        }
     }
     
     if (title && strlen(title) > 0) {
@@ -602,7 +682,7 @@ static void update_metadata(AppState *state) {
             NULL,
             &error
         );
-        
+
         if (player_proxy && !error) {
             GVariant *identity = g_dbus_proxy_get_cached_property(player_proxy, "Identity");
             if (identity) {
@@ -615,7 +695,13 @@ static void update_metadata(AppState *state) {
             g_error_free(error);
         }
     }
-    
+
+    // Cleanup allocated strings
+    g_free(title);
+    g_free(artist);
+    g_free(art_url);
+    g_free(track_id);
+
     g_variant_unref(metadata);
     update_position(state);
 }

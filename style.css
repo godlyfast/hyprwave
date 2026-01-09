@@ -4,62 +4,62 @@
    ======================================== */
 
 :root {
-    /* Background Colors - Frosted Glass */
-    --bg-primary: rgba(240, 245, 250, 0.75);
-    --bg-secondary: rgba(230, 238, 245, 0.75);
-    --bg-album-cover: rgba(220, 228, 235, 0.85);
-    --bg-album-secondary: rgba(210, 220, 230, 0.85);
-    
-    /* Button Colors - Default (Prev/Next) - Steel Gray */
-    --btn-default: rgba(200, 210, 220, 0.85);
-    --btn-default-secondary: rgba(190, 200, 210, 0.85);
-    --btn-default-hover: rgba(210, 220, 230, 0.92);
-    --btn-default-hover-secondary: rgba(200, 210, 220, 0.92);
-    
-    /* Button Colors - Play/Pause - Brushed Steel */
-    --btn-play: rgba(180, 190, 200, 0.95);
-    --btn-play-secondary: rgba(170, 180, 190, 0.95);
-    --btn-play-hover: rgba(190, 200, 210, 0.98);
-    --btn-play-hover-secondary: rgba(180, 190, 200, 0.98);
-    --btn-play-active: rgba(160, 170, 180, 0.95);
-    --btn-play-active-secondary: rgba(150, 160, 170, 0.95);
-    
-    /* Button Colors - Expand - Light Steel */
-    --btn-expand: rgba(185, 195, 205, 0.95);
-    --btn-expand-secondary: rgba(175, 185, 195, 0.95);
-    --btn-expand-hover: rgba(195, 205, 215, 0.98);
-    --btn-expand-hover-secondary: rgba(185, 195, 205, 0.98);
-    --btn-expand-active: rgba(165, 175, 185, 0.95);
-    --btn-expand-active-secondary: rgba(155, 165, 175, 0.95);
-    
+    /* Background Colors - Dark Glass */
+    --bg-primary: rgba(20, 20, 25, 0.85);
+    --bg-secondary: rgba(15, 15, 20, 0.85);
+    --bg-album-cover: rgba(30, 30, 35, 0.9);
+    --bg-album-secondary: rgba(25, 25, 30, 0.9);
+
+    /* Button Colors - Default (Prev/Next) - Dark Steel */
+    --btn-default: rgba(45, 45, 55, 0.9);
+    --btn-default-secondary: rgba(35, 35, 45, 0.9);
+    --btn-default-hover: rgba(55, 55, 65, 0.95);
+    --btn-default-hover-secondary: rgba(45, 45, 55, 0.95);
+
+    /* Button Colors - Play/Pause - Dark Brushed Steel */
+    --btn-play: rgba(50, 50, 60, 0.95);
+    --btn-play-secondary: rgba(40, 40, 50, 0.95);
+    --btn-play-hover: rgba(60, 60, 70, 0.98);
+    --btn-play-hover-secondary: rgba(50, 50, 60, 0.98);
+    --btn-play-active: rgba(35, 35, 45, 0.95);
+    --btn-play-active-secondary: rgba(30, 30, 40, 0.95);
+
+    /* Button Colors - Expand - Dark Steel */
+    --btn-expand: rgba(45, 45, 55, 0.95);
+    --btn-expand-secondary: rgba(38, 38, 48, 0.95);
+    --btn-expand-hover: rgba(55, 55, 65, 0.98);
+    --btn-expand-hover-secondary: rgba(48, 48, 58, 0.98);
+    --btn-expand-active: rgba(35, 35, 45, 0.95);
+    --btn-expand-active-secondary: rgba(30, 30, 40, 0.95);
+
     /* Progress Bar Colors */
-    --progress-bg: rgba(200, 210, 220, 0.25);
-    --progress-fill-start: rgba(160, 170, 180, 0.95);
-    --progress-fill-end: rgba(180, 190, 200, 0.95);
-    
-    /* Text Colors */
-    --text-primary: rgba(40, 50, 60, 0.95);
-    --text-secondary: rgba(60, 70, 80, 0.85);
-    --text-tertiary: rgba(80, 90, 100, 0.75);
-    --text-muted: rgba(100, 110, 120, 0.65);
-    
-    /* Border Colors */
-    --border-primary: rgba(180, 190, 200, 0.35);
-    --border-button: rgba(170, 180, 190, 0.3);
-    --border-button-hover: rgba(160, 170, 180, 0.45);
-    --border-play: rgba(150, 160, 170, 0.4);
-    --border-play-hover: rgba(140, 150, 160, 0.55);
-    --border-expand: rgba(155, 165, 175, 0.4);
-    --border-expand-hover: rgba(145, 155, 165, 0.55);
-    
-    /* Shadow Colors */
-    --shadow-default: rgba(0, 0, 0, 0.15);
-    --shadow-button: rgba(0, 0, 0, 0.1);
-    --shadow-play: rgba(100, 110, 120, 0.2);
-    --shadow-play-hover: rgba(90, 100, 110, 0.3);
-    --shadow-expand: rgba(100, 110, 120, 0.2);
-    --shadow-expand-hover: rgba(90, 100, 110, 0.3);
-    --shadow-focus: rgba(120, 130, 140, 0.4);
+    --progress-bg: rgba(80, 80, 95, 0.5);
+    --progress-fill-start: rgba(180, 180, 200, 0.95);
+    --progress-fill-end: rgba(200, 200, 220, 0.95);
+
+    /* Text Colors - Light on Dark */
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --text-secondary: rgba(220, 220, 230, 0.9);
+    --text-tertiary: rgba(180, 180, 195, 0.85);
+    --text-muted: rgba(160, 160, 175, 0.8);
+
+    /* Border Colors - Subtle light borders */
+    --border-primary: rgba(80, 80, 95, 0.4);
+    --border-button: rgba(70, 70, 85, 0.35);
+    --border-button-hover: rgba(90, 90, 105, 0.5);
+    --border-play: rgba(75, 75, 90, 0.45);
+    --border-play-hover: rgba(95, 95, 110, 0.6);
+    --border-expand: rgba(75, 75, 90, 0.45);
+    --border-expand-hover: rgba(95, 95, 110, 0.6);
+
+    /* Shadow Colors - Stronger for dark theme */
+    --shadow-default: rgba(0, 0, 0, 0.4);
+    --shadow-button: rgba(0, 0, 0, 0.3);
+    --shadow-play: rgba(0, 0, 0, 0.35);
+    --shadow-play-hover: rgba(0, 0, 0, 0.45);
+    --shadow-expand: rgba(0, 0, 0, 0.35);
+    --shadow-expand-hover: rgba(0, 0, 0, 0.45);
+    --shadow-focus: rgba(100, 100, 120, 0.5);
     
     /* Spacing & Sizes */
     --border-radius-container: 100px;
@@ -189,13 +189,13 @@ window {
     font-weight: 500;
     margin-top: 2px;
     padding: 2px 8px;
-    background: rgba(100, 120, 140, 0.2);
+    background: rgba(80, 80, 100, 0.35);
     border-radius: 8px;
     cursor: pointer;
 }
 
 .player-label:hover {
-    background: rgba(100, 120, 140, 0.35);
+    background: rgba(100, 100, 120, 0.5);
 }
 
 /* Track title */
@@ -254,16 +254,16 @@ window {
     margin: 0;
     min-width: 44px;
     min-height: 44px;
-    
+
     background: linear-gradient(135deg, var(--btn-default), var(--btn-default-secondary));
     color: var(--text-primary);
     border: 1.5px solid var(--border-button);
     border-radius: var(--border-radius-button);
-    
-    box-shadow: 
+
+    box-shadow:
         0 4px 12px var(--shadow-button),
-        inset 0 1px 1px rgba(255, 255, 255, 0.15);
-    
+        inset 0 1px 1px rgba(255, 255, 255, 0.08);
+
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -271,9 +271,9 @@ window {
     background: linear-gradient(135deg, var(--btn-default-hover), var(--btn-default-hover-secondary));
     border-color: var(--border-button-hover);
     transform: scale(1.08);
-    box-shadow: 
+    box-shadow:
         0 6px 16px var(--shadow-button),
-        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        inset 0 1px 1px rgba(255, 255, 255, 0.12);
 }
 
 .control-button:active {
@@ -290,17 +290,17 @@ window {
 .play-button {
     background: linear-gradient(135deg, var(--btn-play), var(--btn-play-secondary));
     border-color: var(--border-play);
-    box-shadow: 
+    box-shadow:
         0 4px 16px var(--shadow-play),
-        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 .play-button:hover {
     background: linear-gradient(135deg, var(--btn-play-hover), var(--btn-play-hover-secondary));
     border-color: var(--border-play-hover);
-    box-shadow: 
+    box-shadow:
         0 6px 20px var(--shadow-play-hover),
-        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+        inset 0 1px 1px rgba(255, 255, 255, 0.15);
 }
 
 .play-button:active {
@@ -317,17 +317,17 @@ window {
 .expand-button {
     background: linear-gradient(135deg, var(--btn-expand), var(--btn-expand-secondary));
     border-color: var(--border-expand);
-    box-shadow: 
+    box-shadow:
         0 4px 16px var(--shadow-expand),
-        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 .expand-button:hover {
     background: linear-gradient(135deg, var(--btn-expand-hover), var(--btn-expand-hover-secondary));
     border-color: var(--border-expand-hover);
-    box-shadow: 
+    box-shadow:
         0 6px 20px var(--shadow-expand-hover),
-        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+        inset 0 1px 1px rgba(255, 255, 255, 0.15);
 }
 
 .expand-button:active {
@@ -342,11 +342,11 @@ window {
    ======================================== */
 
 .prev-button, .next-button {
-    background: linear-gradient(135deg, rgba(200, 210, 220, 0.92), rgba(190, 200, 210, 0.85));
+    background: linear-gradient(135deg, rgba(45, 45, 55, 0.92), rgba(35, 35, 45, 0.85));
 }
 
 .prev-button:hover, .next-button:hover {
-    background: linear-gradient(135deg, rgba(210, 220, 230, 0.96), rgba(200, 210, 220, 0.92));
+    background: linear-gradient(135deg, rgba(55, 55, 65, 0.96), rgba(45, 45, 55, 0.92));
 }
 
 /* ========================================
@@ -359,10 +359,10 @@ button {
 
 button:focus {
     outline: none;
-    box-shadow: 
+    box-shadow:
         0 0 0 3px var(--shadow-focus),
         0 4px 16px var(--shadow-play),
-        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 /* ========================================
@@ -390,23 +390,26 @@ button:focus {
 
 .notification-header {
     color: var(--text-muted);
-    font-size: 10px;      /* Reduced from 11px */
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 6px;   /* Reduced from 8px */
+    margin-bottom: 6px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .notification-song {
     color: var(--text-primary);
-    font-size: 13px;      /* Reduced from 14px */
+    font-size: 13px;
     font-weight: 600;
-    line-height: 1.2;     /* Added for tighter spacing */
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .notification-artist {
     color: var(--text-secondary);
-    font-size: 11px;      /* Reduced from 12px */
+    font-size: 11px;
     font-weight: 500;
-    line-height: 1.2;     /* Added for tighter spacing */
+    line-height: 1.2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }

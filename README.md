@@ -1,4 +1,4 @@
-# 🌊 HyprWave - v0.4 (latest release)
+# 🌊 HyprWave - v0.4.1 (latest release)
 
 A sleek, modern music control bar for Wayland compositors (Hyprland, Niri, Sway, etc.) with MPRIS integration.
 
@@ -34,7 +34,7 @@ A sleek, modern music control overlay for Wayland compositors (Hyprland, Niri, S
 
 ## ✨ Features
 
-- **Elegant Design** - Glassmorphic UI with smooth animations
+- **Elegant Dark Design** - Modern dark glass UI with smooth animations
 - **MPRIS Integration** - Works with Spotify, VLC, and any MPRIS-compatible player
 - **Album Art Display** - Fetches and displays album artwork
 - **Live Progress Tracking** - Real-time progress bar with countdown timer
@@ -337,7 +337,13 @@ Config: `~/.config/hyprwave/config.conf`
 
 ## 🗺️ Roadmap
 
-### v0.4.0 (Current) ✨ NEW
+### v0.4.1 (Current) ✨ NEW
+- [x] Dark theme as default (better visibility and modern look)
+- [x] Improved notification reliability with debounced metadata collection
+- [x] Fixed window hiding (completely invisible when hidden)
+- [x] Fixed memory bug causing incorrect track info in notifications
+
+### v0.4.0
 - [x] Now Playing notifications with smooth slide animations
 - [x] Configurable notification settings
 - [x] Album art in notifications
