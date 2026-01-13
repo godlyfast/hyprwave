@@ -9,7 +9,7 @@
 #include "notification.h"
 #include "art.h"
 
-#define HYPRWAVE_VERSION "0.5.2"
+#define HYPRWAVE_VERSION "0.5.3"
 
 typedef struct {
     GtkWidget *window;
