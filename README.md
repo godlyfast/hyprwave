@@ -12,6 +12,7 @@ Built with GTK4 and gtk4-layer-shell for Hyprland, Niri, Sway, and other Wayland
 
 ## Features
 
+- **Volume Control** - Double-click album cover to reveal volume slider (auto-hides after 3s)
 - **Interactive Seek Bar** - Click or drag to seek within tracks (MPRIS CanSeek support)
 - **Multi-Player Switching** - Click to cycle through MPRIS players (Roon zones, Tidal, Qobuz, etc.)
 - **Player Preference Persistence** - Remembers your preferred player across sessions
@@ -194,6 +195,7 @@ Some players (especially Chromium-based) use ephemeral temp files for album art.
 ## Roadmap
 
 ### Current Features
+- [x] Volume control (double-click album cover)
 - [x] Interactive seek bar with click/drag support
 - [x] Multi-player switching with preference persistence
 - [x] Dark theme with config-based selection
