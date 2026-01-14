@@ -3,9 +3,7 @@
 A sleek, modern music control bar for Wayland compositors (Hyprland, Niri, Sway, etc.) with MPRIS integration.
 
 
-Updates till now:  - Multi-Anchor support, Notifications, Music Controls, CSS Styling (control bar, expanded section and notifications), and launching it as an application, huge UI bug fixing, ability to seek to different song part via click or drag and click in the latest update.
-
-Thanks to godlyfast for the bug fixes in the animation and album art resiszing bugs for left and right anchored hyprwaves respectively. Do check out his fork for more advanced features for hyprwave.
+Updates till now:  - Multi-Anchor support, Notifications, Music Controls, CSS Styling (control bar, expanded section and notifications), and launching it as an application, huge UI bug fixing, ability to seek to different song part via click or drag and click, volume controls added in the latest update.
 
 Built and primarily tested on Niri, for all wayland compositors that support GTK4 and GTK4-layer-shell.
 
@@ -13,28 +11,47 @@ Also, Massive update- hyprwave is now on AUR.
 Simply install it with-
 
 ```yay -S hyprwave```
+
+
 It will not give you the bleeding new updates, but the latest releases.
 
 #### 📸 Screenshots
 
+### Vertical Layout
 
-### Right
-<img width="1331" height="768" alt="image" src="https://github.com/user-attachments/assets/f5e7681d-942e-46f0-84f4-e789dca326cd" />
-<img width="1331" height="768" alt="image" src="https://github.com/user-attachments/assets/e32bda28-491a-419c-890b-3fad5975cc98" />
+<img width="105" height="305" alt="image" src="https://github.com/user-attachments/assets/7675da1e-d6ae-417d-8201-17e1eb670ed0" />
 
-### Top
-<img width="1331" height="768" alt="image" src="https://github.com/user-attachments/assets/b1206d4f-a454-4666-bc41-8a34f0619a74" />
-<img width="1331" height="768" alt="image" src="https://github.com/user-attachments/assets/3d46dd03-a777-482f-957b-6fcb8891ccea" />
+<img width="313" height="377" alt="image" src="https://github.com/user-attachments/assets/432a85ad-a013-400c-9652-2481ff9a93ad" />
 
+### Horizontal Layout
 
-### Bottom
-<img width="1331" height="768" alt="image" src="https://github.com/user-attachments/assets/14236ba6-2e4f-4e18-ba58-67c256a43c0d" />
-<img width="1331" height="768" alt="image" src="https://github.com/user-attachments/assets/4c4d1b79-4e13-48cb-bf61-3d3f17ac5f7d" />
+<img width="388" height="84" alt="image" src="https://github.com/user-attachments/assets/67a477a9-3cdc-4029-941c-d99cff080b16" />
+
+<img width="449" height="275" alt="image" src="https://github.com/user-attachments/assets/0b1bede5-102b-484b-ab23-d7a6f87fe8ac" />
 
 
-### Left
-<img width="1331" height="768" alt="image" src="https://github.com/user-attachments/assets/697b6ccb-ccad-422e-9d5c-ff75c2cc9645" />
-<img width="1331" height="768" alt="image" src="https://github.com/user-attachments/assets/b6f5a8a6-d251-48c7-a7a3-1c19fa119539" />
+## Right
+
+![right](https://github.com/user-attachments/assets/0ecf38e1-535c-4858-91d8-190e9c9fd55a)
+
+
+
+## Top
+
+![top](https://github.com/user-attachments/assets/eb1e279f-e47d-4f37-82ef-833810014fc9)
+
+
+
+## Bottom
+
+![bottom](https://github.com/user-attachments/assets/9dab5619-efc3-4523-a135-038c3c6b2551)
+
+
+## Left
+
+
+![left](https://github.com/user-attachments/assets/e02741cc-738d-4e3e-a097-89b98934842d)
+
 
 # HyprWave 🎵
 
@@ -61,6 +78,10 @@ Shows album cover, track title, artist, progress bar, and time remaining.
 
 ### Now Playing Notifications
 Smooth slide-in notifications appear in the top-right corner when tracks change, showing album art, song title, and artist.
+
+### Volume Control
+
+Double click the album cover to reveal the volume bar, and double click it back to hide it again. Volume bar auto-hides itself after 3 seconds, or after you collapse the expanded state!
 
 ## 🚀 Installation
 
@@ -278,8 +299,8 @@ Config: `~/.config/hyprwave/config.conf`
 
 ## 🗺️ Roadmap
 
-### v0.5.0 (Current and NEW!)
-- [ ] Seek control integration
+### v0.6.0 (Current and NEW!)
+- [ ] Volume control integration
 - [ ] Bug and Animation fixes
 
 ### v1.0.0 (Goals)
